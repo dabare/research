@@ -1,41 +1,93 @@
 #include "radio.h"
 
-void RX();
-void TX(byte to);
+void work();
+void sleep();
+void broadcastSYNC();
+
+struct SyncPacket { // Any packet up to 32 bytes can be sent.
+  uint8_t from;
+  int sleep;
+  int work;
+  byte a[6];
+};
+
+struct RadioPacket { // Any packet up to 32 bytes can be sent.
+  uint8_t from;
+  int sleep;
+  int work;
+};
+
+
+SyncPacket _sync;
+
+RadioPacket _radioData;
+
+RadioPacket _gotData;
+RadioPacket _toSendData;
 
 void mySetup() {
   setupLED();
-  setupRadio();
+  setupMemory();
+
+  if (RADIO_ID == ROOT_ID) {
+    CURRENT_ID = RADIO_ID;
+
+    WORK_TIME = 100;
+    SLEEP_TIME = 100;
+
+    _sync.from = RADIO_ID;
+    _sync.sleep = SLEEP_TIME;
+    _sync.work = WORK_TIME;
+  }
+
+  setupRadio(CURRENT_ID);
 }
 
+int cycle;
 void myLoop() {
-  switch (RADIO_ID) {
-    case 4:
-      TX(5);
-      break;
-    case 5:
-      RX();
-      break;
-    case 6:
-      TX(7);
-      break;
-    case 7:
-      RX();
-      break;
+  cycle = WORK_TIME;
+  if (CURRENT_ID != INIT_ID) {
+    broadcastSYNC();
+  }
+  while (cycle--) {
+    work();
+  }
+  cycle = SLEEP_TIME;
+  while (cycle--) {
+    sleep();
   }
 }
 
-void RX() {
+void sleep() {
+  _radio.powerDown();
+  offRed();
+}
+
+void work() {
+  onRed();
   if (_radio.hasData()) {
-    onRed();
-    _radio.readData(&_radioData); // Note how '&' must be placed in front of the variable name
-    offRed();
+    onGreen();
+
+    cycle = WORK_TIME;
+    if (CURRENT_ID == INIT_ID) {
+      CURRENT_ID = RADIO_ID;
+      setupRadio(CURRENT_ID);
+
+      _radio.readData(&_sync);
+      WORK_TIME = _sync.work;
+      SLEEP_TIME = _sync.sleep;
+      _sync.from = RADIO_ID;
+
+      cycle = WORK_TIME;
+    } else {
+      _radio.readData(&_gotData);
+    }
+
+    offGreen();
   }
 }
 
-void TX(byte to) {
-  onGreen();
-  _radio.send(to, &_radioData, sizeof(_radioData));
-  offGreen();
+void broadcastSYNC() {
+  //_radio.send(INIT_ID, &_sync, sizeof(_sync), NRFLite::NO_ACK);
+  _radio.send(INIT_ID, &_sync, sizeof(_sync), NRFLite::REQUIRE_ACK);
 }
-
