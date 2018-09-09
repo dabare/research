@@ -8,7 +8,6 @@
 #define PIN_RADIO_MOMI 1
 #define PIN_RADIO_SCK  3
 
-uint8_t RADIO_ID = 255;             // Our radio's id.
 const static uint8_t DESTINATION_RADIO_ID = 0; // Id of the radio we will transmit to.
 
 byte data[6] = {1, 1, 0, 0, 0};

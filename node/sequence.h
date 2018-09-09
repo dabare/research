@@ -23,7 +23,7 @@ void myLoop() {
     work();
     idle();
   }
-  sleep();
+ // sleep();
 }
 
 void idle() {
