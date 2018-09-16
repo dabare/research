@@ -2,53 +2,36 @@
 
 void work();
 void sleep();
-void broadcastSYNC();
+void broadcast();
+void mergeData();
+void eraseData();
 
-struct SyncPacket { // Any packet up to 32 bytes can be sent.
+byte rxData[PACKET_SIZE];
+byte txData[PACKET_SIZE];
+
+typedef struct {
   uint8_t from;
-  int sleep;
-  int work;
-  byte a[6];
-};
-
-struct RadioPacket { // Any packet up to 32 bytes can be sent.
-  uint8_t from;
-  int sleep;
-  int work;
-};
+  byte data;
+}  * Packet;
 
 
-SyncPacket _sync;
-
-RadioPacket _radioData;
-
-RadioPacket _gotData;
-RadioPacket _toSendData;
+Packet rxPacket =  (Packet)rxData;
+Packet txPacket =  (Packet)txData;
 
 void mySetup() {
   setupLED();
   setupMemory();
 
-  if (RADIO_ID == ROOT_ID) {
-    CURRENT_ID = RADIO_ID;
-
-    WORK_TIME = 100;
-    SLEEP_TIME = 100;
-
-    _sync.from = RADIO_ID;
-    _sync.sleep = SLEEP_TIME;
-    _sync.work = WORK_TIME;
-  }
-
-  setupRadio(CURRENT_ID);
+  txPacket->from = RADIO_ID;
+  
+  setupRadio(INIT_ID);
 }
 
 int cycle;
 void myLoop() {
   cycle = WORK_TIME;
-  if (CURRENT_ID != INIT_ID) {
-    broadcastSYNC();
-  }
+
+  broadcast();
   while (cycle--) {
     work();
   }
@@ -68,26 +51,26 @@ void work() {
   if (_radio.hasData()) {
     onGreen();
 
-    cycle = WORK_TIME;
-    if (CURRENT_ID == INIT_ID) {
-      CURRENT_ID = RADIO_ID;
-      setupRadio(CURRENT_ID);
+    _radio.readData(&rxPacket);
 
-      _radio.readData(&_sync);
-      WORK_TIME = _sync.work;
-      SLEEP_TIME = _sync.sleep;
-      _sync.from = RADIO_ID;
-
-      cycle = WORK_TIME;
-    } else {
-      _radio.readData(&_gotData);
-    }
+    mergeData();
 
     offGreen();
   }
 }
 
-void broadcastSYNC() {
-  //_radio.send(INIT_ID, &_sync, sizeof(_sync), NRFLite::NO_ACK);
-  _radio.send(INIT_ID, &_sync, sizeof(_sync), NRFLite::REQUIRE_ACK);
+void broadcast() {
+  //_radio.send(INIT_ID, &data, sizeof(data), NRFLite::NO_ACK);
+  _radio.send(INIT_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);
+  eraseData();
 }
+
+void mergeData() {
+  txPacket->data |= rxPacket->data;
+  txPacket->data |= (1 << rxPacket->from);
+}
+
+void eraseData() {
+  txPacket->data = 1 << RADIO_ID;
+}
+
