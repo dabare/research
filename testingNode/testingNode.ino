@@ -5,7 +5,7 @@
 
 NRFLite _radio;
 
-byte data[31];
+byte data[32];
 
 typedef struct {
   uint8_t from;

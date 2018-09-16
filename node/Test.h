@@ -23,11 +23,16 @@ void mySetup() {
   setupMemory();
 
   txPacket->from = RADIO_ID;
-  
+  eraseData();
+
+  //setupRadio(RADIO_ID);
   setupRadio(INIT_ID);
 }
 
 int cycle;
+
+bool ADDorSUB = false;
+
 void myLoop() {
   cycle = WORK_TIME;
 
@@ -35,10 +40,11 @@ void myLoop() {
   while (cycle--) {
     work();
   }
-  cycle = SLEEP_TIME;
+  cycle = SLEEP_TIME + ADDorSUB * PAD * (RADIO_ID % PAD_MOD);
   while (cycle--) {
     sleep();
   }
+  ADDorSUB = !ADDorSUB;
 }
 
 void sleep() {
@@ -51,7 +57,7 @@ void work() {
   if (_radio.hasData()) {
     onGreen();
 
-    _radio.readData(&rxPacket);
+    _radio.readData(&rxData);
 
     mergeData();
 
@@ -60,8 +66,13 @@ void work() {
 }
 
 void broadcast() {
-  //_radio.send(INIT_ID, &data, sizeof(data), NRFLite::NO_ACK);
   _radio.send(INIT_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);
+
+  //_radio.send(INIT_ID, &data, sizeof(data), NRFLite::NO_ACK);
+  
+  /*for (byte i = MIN_ID; i <= MAX_ID; i++) {
+    _radio.send(i, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);
+  }*/
   eraseData();
 }
 
