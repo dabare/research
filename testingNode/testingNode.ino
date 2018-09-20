@@ -1,5 +1,8 @@
 #include "NRFLite.h"
 
+
+#define PACKET_SIZE 32
+
 #define PIN_RADIO_MOMI 8
 #define PIN_RADIO_SCK  9
 
@@ -7,9 +10,17 @@ NRFLite _radio;
 
 byte data[32];
 
+struct message {
+  byte from;
+  byte to;
+  byte msg;
+};
+
 typedef struct {
-  uint8_t from;
-  byte data;
+  byte from;
+  struct message msg;
+  byte data[PACKET_SIZE - 2 - sizeof(message)];
+  byte hash;
 }  * Packet;
 
 Packet rxPacket =  (Packet)data;
@@ -36,12 +47,23 @@ void loop() {
     Serial.print(rxPacket->from);
     Serial.print(" : ");
     for (byte k = 0; k < 8; k++) {
-      Serial.print(rxPacket->data >> k & 1 );
+      Serial.print(rxPacket->data[0] >> k & 1 );
       Serial.print(",");
     }
     //for (byte i = 0; i < 32; i++) {
     //  Serial.print(data[i]); Serial.print(",");
     //}
+    Serial.print(" msgFrom: ");
+    Serial.print(rxPacket->msg.from);
+    Serial.print(" msgTo: ");
+    Serial.print(rxPacket->msg.to);
+    Serial.print(" msg: ");
+    for (byte k = 0; k < 8; k++) {
+      Serial.print(rxPacket->msg.msg >> k & 1 );
+      Serial.print(",");
+    }
+    Serial.print("  hash: ");
+    Serial.print(rxPacket->hash);
     Serial.println();
   }
   return;
