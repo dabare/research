@@ -5,7 +5,7 @@
 
 #define MIN_ID 0
 #define MAX_ID 7
-#define INIT_ID 155
+#define INIT_ID 255// broadcast id
 #define ROOT_ID 1
 
 #define DEFAULT_SLEEP_TIME 475

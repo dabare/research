@@ -14,6 +14,9 @@ bool checkRxHash();
 void setMessageToPkt();
 void deleteDeadMsgs();
 void shiftMessageUp(byte index);
+byte findMessage(byte from, byte to, byte msg);
+void addMessage(byte from, byte to, byte msg, byte life);
+void updateMessages();
 
 byte rxData[PACKET_SIZE];
 byte txData[PACKET_SIZE];
@@ -56,16 +59,9 @@ void mySetup() {
   setupRadio(INIT_ID);
 
   //default message
-  msgCount = 4;
+  msgCount = 0;
   msgToSend = 0;
-  msgs[0] = {0, 0, 0};
-  msgs[1] = {1, 0, 0};
-  msgs[2] = {2, 0, 0};
-  msgs[3] = {3, 0, 0};
-  msgLife[0] = MESSAGE_LIFE;
-  msgLife[1] = 1;
-  msgLife[2] = 2;
-  msgLife[3] = 3;
+  addMessage(0, 0, 0, MESSAGE_LIFE);
 }
 
 int cycle;
@@ -112,6 +108,7 @@ void work() {
     if (checkRxHash()) {
       mergeData();
       addNeighbour();
+      updateMessages();
     }
 
     offGreen();
@@ -122,6 +119,12 @@ void broadcast() {
   addMyData();
   calculateTxHash();
   bool pktSent = _radio.send(INIT_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK) == 1;
+
+ /* bool pktSent =
+    _radio.send(INIT_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK) == 1 ||
+    _radio.send(5, &txData, sizeof(txData), NRFLite::REQUIRE_ACK) == 1 
+    ;*/
+
   if (!pktSent) {
     txFailCount++;
   } else {
@@ -243,12 +246,15 @@ byte findMessage(byte from, byte to, byte msg) {
   return -1;
 }
 
-void addMessage() {
+/**
+   add the message to the message list
+*/
+void addMessage(byte from, byte to, byte msg, byte life) {
   if (msgCount < MAX_MESSAGES) {
-    msgs[msgCount].from = rxPacket->msg.from;
-    msgs[msgCount].to = rxPacket->msg.to;
-    msgs[msgCount].msg = rxPacket->msg.msg;
-    msgLife[msgCount] = MESSAGE_LIFE;
+    msgs[msgCount].from = from;
+    msgs[msgCount].to = to;
+    msgs[msgCount].msg = msg;
+    msgLife[msgCount] = life;
     msgCount++;
   } else {//if no space replace with the lowerst msgLife
     byte index = 0;
@@ -259,10 +265,10 @@ void addMessage() {
       }
       index++;
     }
-    msgs[minIndex].from = rxPacket->msg.from;
-    msgs[minIndex].to = rxPacket->msg.to;
-    msgs[minIndex].msg = rxPacket->msg.msg;
-    msgLife[minIndex] = MESSAGE_LIFE;
+    msgs[minIndex].from = from;
+    msgs[minIndex].to = to;
+    msgs[minIndex].msg = msg;
+    msgLife[minIndex] = life;
   }
 }
 
@@ -272,11 +278,14 @@ void addMessage() {
    if it is a ACK message remove from the list
 */
 void updateMessages() {
+  if (!rxPacket->msg.msg) {
+    return;
+  }
   byte index = findMessage(rxPacket->msg.from, rxPacket->msg.to, rxPacket->msg.msg & REMOVE_ACK_BIT);
   if ((rxPacket->msg.msg & MESSAGE_ACK_BIT) && (index != -1)) {
     shiftMessageUp(index);
   } else if (!(rxPacket->msg.msg & MESSAGE_ACK_BIT)) {
-    addMessage();
+    addMessage(rxPacket->msg.from, rxPacket->msg.to, rxPacket->msg.msg, MESSAGE_LIFE);
   }
 }
 

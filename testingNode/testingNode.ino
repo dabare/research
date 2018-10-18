@@ -30,7 +30,7 @@ void setup() {
   Serial.begin(115200);
   while (!Serial);
   Serial.println("Serial Ready");
-  while (!_radio.initTwoPin(155, PIN_RADIO_MOMI, PIN_RADIO_SCK)) {
+  while (!_radio.initTwoPin(255, PIN_RADIO_MOMI, PIN_RADIO_SCK)) {
     Serial.print(".");
   }
 
@@ -38,12 +38,22 @@ void setup() {
   Serial.println();
 }
 
+
+bool checkRxHash() {
+  if (rxPacket->hash == rxPacket->from ^ rxPacket->data[0]) {
+    return true;
+  }
+  return false;
+}
+
 unsigned long count = 0;
 void loop() {
 
   if (_radio.hasData()) {
     _radio.readData(&data); // Note how '&' must be placed in front of the variable name.
-
+    if(!checkRxHash()){
+      return;
+    }
     Serial.print(rxPacket->from);
     Serial.print(" : ");
     for (byte k = 0; k < 8; k++) {
