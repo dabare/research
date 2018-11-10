@@ -10,16 +10,10 @@ NRFLite _radio;
 
 byte data[32];
 
-struct message {
-  byte from;
-  byte to;
-  byte msg;
-};
 
 typedef struct {
   byte from;
-  struct message msg;
-  byte data[PACKET_SIZE - 2 - sizeof(message)];
+  byte data[PACKET_SIZE - 2];// two bytes for 'from' and 'hash'
   byte hash;
 }  * Packet;
 
@@ -30,11 +24,20 @@ void setup() {
   Serial.begin(115200);
   while (!Serial);
   Serial.println("Serial Ready");
-  while (!_radio.initTwoPin(255, PIN_RADIO_MOMI, PIN_RADIO_SCK)) {
+  while (!_radio.initTwoPin(0, PIN_RADIO_MOMI, PIN_RADIO_SCK)) {
     Serial.print(".");
   }
 
   _radio.printDetails();
+  Serial.println();
+  byte x = 0b11111111;
+  x >>= 4;
+  x <<= 4;
+
+  for (byte k = 0; k < 8; k++) {
+    Serial.print(x >> (7 - k) & 1 );
+    Serial.print(",");
+  }
   Serial.println();
 }
 
@@ -51,27 +54,22 @@ void loop() {
 
   if (_radio.hasData()) {
     _radio.readData(&data); // Note how '&' must be placed in front of the variable name.
-    if(!checkRxHash()){
-      return;
+    if (!checkRxHash()) {
+      Serial.print("Droped message from:");
+      Serial.print(rxPacket->from);
+      Serial.println(" due to invalied hash");
+         return;
     }
     Serial.print(rxPacket->from);
     Serial.print(" : ");
     for (byte k = 0; k < 8; k++) {
-      Serial.print(rxPacket->data[0] >> k & 1 );
+      Serial.print(rxPacket->data[0] >> (7 - k) & 1 );
       Serial.print(",");
     }
     //for (byte i = 0; i < 32; i++) {
     //  Serial.print(data[i]); Serial.print(",");
     //}
-    Serial.print(" msgFrom: ");
-    Serial.print(rxPacket->msg.from);
-    Serial.print(" msgTo: ");
-    Serial.print(rxPacket->msg.to);
-    Serial.print(" msg: ");
-    for (byte k = 0; k < 8; k++) {
-      Serial.print(rxPacket->msg.msg >> k & 1 );
-      Serial.print(",");
-    }
+
     Serial.print("  hash: ");
     Serial.print(rxPacket->hash);
     Serial.println();

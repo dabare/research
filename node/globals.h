@@ -8,8 +8,8 @@
 #define INIT_ID 255// broadcast id
 #define ROOT_ID 1
 
-#define DEFAULT_SLEEP_TIME 475
-#define DEFAULT_WORK_TIME 325
+#define DEFAULT_SLEEP_TIME 70//475
+#define DEFAULT_WORK_TIME 30//325
 
 #define MAX_NEIGHBOURS 10
 #define NEIGHBOUR_LIFE 15
