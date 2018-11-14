@@ -31,3 +31,5 @@ int WORK_TIME = DEFAULT_WORK_TIME;
 uint8_t RADIO_ID = 255;             // Our radio's id.
 
 uint8_t CURRENT_ID = INIT_ID;
+
+#define ZONE_RADIOUS 2

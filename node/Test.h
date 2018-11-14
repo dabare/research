@@ -39,6 +39,8 @@ void mySetup() {
 
   setupRadio(RADIO_ID);
   //setupRadio(INIT_ID);
+  setupSW();
+  setupSleep();
 }
 
 int cycle;
@@ -48,7 +50,8 @@ bool ADDorSUB = false;
 void myLoop() {
   wake();
 
-  cycle = WORK_TIME;
+  //cycle = WORK_TIME;
+  cycle = WORK_TIME + ADDorSUB * PAD * (RADIO_ID % PAD_MOD);
 
   broadcast();
   reduceNeighbourLife();
@@ -56,21 +59,22 @@ void myLoop() {
   while (cycle--) {
     work();
   }
-
-  cycle = SLEEP_TIME + ADDorSUB * PAD * (RADIO_ID % PAD_MOD);
-  while (cycle--) {
-    sleep();
-  }
+  //cycle = SLEEP_TIME + ADDorSUB * PAD * (RADIO_ID % PAD_MOD);
+  //while (cycle--) {
+  sleep();
+  //}
   ADDorSUB = !ADDorSUB;
 }
 
 void sleep() {
   _radio.powerDown();
   offRed();
+  watchdogSleep1s();
 }
 
 void wake() {
   setupRadio(RADIO_ID);
+  //setupRadio(INIT_ID);
   _radio.hasData();
 }
 
@@ -90,26 +94,31 @@ void work() {
   }
 }
 
+byte tmpBroadcast = 0;
 void broadcast() {
+  tmpBroadcast = ZONE_RADIOUS;
   addMyData();
   calculateTxHash();
-  bool pktSent = 
-  _radio.send(INIT_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK) == 1 |
-  _radio.send(RADIO_ID - 1, &txData, sizeof(txData), NRFLite::REQUIRE_ACK) == 1 |
-  _radio.send(RADIO_ID + 1, &txData, sizeof(txData), NRFLite::REQUIRE_ACK) == 1 |
-  _radio.send(RADIO_ID - 2, &txData, sizeof(txData), NRFLite::REQUIRE_ACK) == 1 |
-  _radio.send(RADIO_ID + 2, &txData, sizeof(txData), NRFLite::REQUIRE_ACK) == 1
-  ;
 
- /* bool pktSent =
-    _radio.send(INIT_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK) == 1 ||
-    _radio.send(5, &txData, sizeof(txData), NRFLite::REQUIRE_ACK) == 1 
-    ;*/
+  _radio.send(INIT_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);
+  while (tmpBroadcast) {
+    _radio.send(RADIO_ID - tmpBroadcast, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);
+    _radio.send(RADIO_ID + tmpBroadcast, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);
+    tmpBroadcast--;
+  }
+
+
+  /* bool pktSent =
+     _radio.send(INIT_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK) == 1 ||
+     _radio.send(5, &txData, sizeof(txData), NRFLite::REQUIRE_ACK) == 1
+     ;*/
 }
 
 void addMyData() {
-  txPacket->data[0] |= 1 << RADIO_ID;//add my id
-
+  txPacket->data[0] |= 1 << RADIO_ID;//add my id, make the bit 1
+  if (!isFenceOK()) {
+    txPacket->data[0] ^= 1 << RADIO_ID;//if fence not working make the bit to 0
+  }
   byte i = neighbourCount;//add my neighbours
   while (i) {
     if (neighboursRecord[i - 1]) {
@@ -122,18 +131,34 @@ void addMyData() {
 }
 
 void mergeData() {
-  if(rxPacket->from > RADIO_ID){
-    rxPacket->data[0] >>= rxPacket->from;
-    rxPacket->data[0] <<= rxPacket->from;
-    
-    txPacket->data[0] <<= 8 - rxPacket->from;
-    txPacket->data[0] >>= 8 - rxPacket->from;
-  }else{
-    rxPacket->data[0] <<= 7 - rxPacket->from;
-    rxPacket->data[0] >>= 7 - rxPacket->from;
+  if (rxPacket->from > RADIO_ID) {
+    if (rxPacket->from > ZONE_RADIOUS) {
+      rxPacket->data[0] >>= rxPacket->from - ZONE_RADIOUS;
+      rxPacket->data[0] <<= rxPacket->from - ZONE_RADIOUS;
 
-    txPacket->data[0] >>= 1 + rxPacket->from;
-    txPacket->data[0] <<= 1 + rxPacket->from;
+      txPacket->data[0] <<= 8 - (rxPacket->from - ZONE_RADIOUS);
+      txPacket->data[0] >>= 8 - (rxPacket->from - ZONE_RADIOUS);
+    } else {
+      rxPacket->data[0] >>= rxPacket->from;
+      rxPacket->data[0] <<= rxPacket->from;
+
+      txPacket->data[0] <<= 8 - rxPacket->from;
+      txPacket->data[0] >>= 8 - rxPacket->from;
+    }
+  } else {
+    if (rxPacket->from < 7 - ZONE_RADIOUS) {
+      rxPacket->data[0] <<= 7 - rxPacket->from - ZONE_RADIOUS;
+      rxPacket->data[0] >>= 7 - rxPacket->from - ZONE_RADIOUS;
+
+      txPacket->data[0] >>= rxPacket->from + ZONE_RADIOUS;
+      txPacket->data[0] <<= rxPacket->from + ZONE_RADIOUS;
+    } else {
+      rxPacket->data[0] <<= 7 - rxPacket->from;
+      rxPacket->data[0] >>= 7 - rxPacket->from;
+
+      txPacket->data[0] >>= rxPacket->from;
+      txPacket->data[0] <<= rxPacket->from;
+    }
   }
   txPacket->data[0] |= rxPacket->data[0];
 }
@@ -146,14 +171,22 @@ void addNeighbour() {
   byte i = neighbourCount;
   while (i) {
     if (neighbours[i - 1] == rxPacket->from) {
-      neighboursRecord[i - 1] = NEIGHBOUR_LIFE;
+      if ((rxPacket->data[0] & (1 << rxPacket->from)) > 0) { //checks weater the fence working by checking its corresponding bit == 1
+        neighboursRecord[i - 1] = NEIGHBOUR_LIFE;
+      } else {
+        neighboursRecord[i - 1] = 0;
+      }
       return;
     }
     i--;
   }
   if (neighbourCount < MAX_NEIGHBOURS) {
     neighbours[neighbourCount] = rxPacket->from;
-    neighboursRecord[neighbourCount++] = NEIGHBOUR_LIFE;
+    if ((rxPacket->data[0] & (1 << rxPacket->from)) > 0) { //checks weater the fence working by checking its corresponding bit == 1
+      neighboursRecord[neighbourCount++] = NEIGHBOUR_LIFE;
+    } else {
+      neighboursRecord[neighbourCount++] = 0;
+    }
   }
 }
 

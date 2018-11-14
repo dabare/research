@@ -18,7 +18,7 @@ void setupSleep() {
 
 void watchdogSleep1s() {
   ADCSRA &= ~(1 << ADEN); //Disable ADC, saves ~230uA
-  setup_watchdog(0); //Setup watchdog to go off after 1sec
+  setup_watchdog(6u); //Setup watchdog to go off after 1sec
   sleep_mode(); //Go to sleep! Wake up 1sec later and check water
   //ADCSRA |= (1<<ADEN); //Enable ADC
 

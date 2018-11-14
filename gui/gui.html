@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Elephant Fence Breakage Detection System</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+  <style type="text/css">
+ @-webkit-keyframes invalid {
+  from { background-color: red; }
+  to { background-color: inherit; }
+}
+@-moz-keyframes invalid {
+  from { background-color: red; }
+  to { background-color: inherit; }
+}
+@-o-keyframes invalid {
+  from { background-color: red; }
+  to { background-color: inherit; }
+}
+@keyframes invalid {
+  from { background-color: red; }
+  to { background-color: inherit; }
+}
+.invalid {
+  -webkit-animation: invalid 500ms infinite; /* Safari 4+ */
+  -moz-animation:    invalid 500ms infinite; /* Fx 5+ */
+  -o-animation:      invalid 500ms infinite; /* Opera 12+ */
+  animation:         invalid 500ms infinite; /* IE 10+ */
+}
+body {
+    /*background-color: #c2d6d6;*/
+}
+  </style>
+</head>
+<body>
+
+	  <label>Number of nodes</label>
+	  <input type="Number"  id="nodes" value="7" min="1">
+
+	  <label>Time out seconds</label>
+	  <input type="Number"  id="timeout" value="30" min="10">
+
+	  <label>Input</label>
+	  <input type="text"  id="input" value="">
+
+	  
+
+<div class="container">	
+  <table class="table table-dark table-striped" >
+    <thead>
+      <tr>
+        <th width="15%">Node ID</th>
+        <th>Time Out</th>
+      </tr>
+    </thead>
+    <tbody id="list">
+    </tbody>
+  </table>
+  
+</div>
+
+</body>
+
+<script>
+$(document).ready(function(){
+	function setupNodeList() {
+    	$("#list").empty();
+    	var nodes = $("#nodes").val();
+    	for(count = 0; count < nodes; count++){
+    		$("#list").append('<tr id="row'+(count+1)+'" ><td>Node '+(count + 1)+'</td><td><div class="progress" style="height:20px"><div id="node'+(count+1)+'" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:100%">'+ $("#timeout").val() +'</div></div></td></tr>');
+
+    		$("#node"+(count + 1)).attr("remian",$("#timeout").val());
+            }
+	}
+
+    $("#nodes").focusout(function(){
+    	setupNodeList();
+        
+    });
+    $("#timeout").focusout(function(){
+        setupNodeList();
+    });
+
+   setInterval(function() {
+    	var nodes = $("#nodes").val();
+    	for(count = 1; count < (nodes + 1); count++){
+	    	var c = $("#node"+count).attr("remian");
+    		if(c > 0){
+	    		c = c - 1;
+	    		$("#node"+count).attr("remian",c);
+	    		$( "#node"+count ).html( c );
+	    		var p = (c * 100)/$("#timeout").val()
+	    		document.getElementById("node"+count).style.width = p+"%";
+	    		if(p<50){
+	    			$( "#node"+count ).removeClass( "bg-success" ).addClass( "bg-danger" );
+	    		}else{
+	    			$( "#node"+count ).removeClass( "bg-danger" ).addClass( "bg-success" );
+	    		}
+	    		$( "#row"+count ).removeClass( "invalid" );
+
+
+	    	}else{
+	    		$( "#row"+count ).addClass( "invalid" );
+	    	}
+        }
+	}, 1000); 
+
+
+
+	$.fn.enterKey = function (fnc) {
+	    return this.each(function () {
+	        $(this).keypress(function (ev) {
+	            var keycode = (ev.keyCode ? ev.keyCode : ev.which);
+	            if (keycode == '13') {
+	                fnc.call(this, ev);
+	            }
+	        })
+	    })
+	}//6 : 0,1,0,0,0,0,0,0,
+
+
+	$("#input").enterKey(function () {
+    	var inp = $("#input").val();
+    	$("#input").val("");
+    	var res = inp.split(":");
+    	var vals = res[1].trim().split(",")
+    	var nodes = $("#nodes").val();
+
+    	
+    	for(count = 1; count < (nodes + 1); count++){
+	    	if(vals[count]=="1"){
+	    		$("#node"+count).attr("remian",$("#timeout").val());
+	    		$( "#node"+count ).html( $("#timeout").val() );
+	    		document.getElementById("node"+count).style.width = "100%";
+	    		$( "#node"+count ).removeClass( "bg-danger" ).addClass( "bg-success" );
+	    	}
+        }
+	})
+
+	setupNodeList();
+});
+</script>
+</html>
