@@ -48,17 +48,18 @@ int cycle;
 bool ADDorSUB = false;
 
 void myLoop() {
-  wake();
+  //wake();
 
   //cycle = WORK_TIME;
-  cycle = WORK_TIME + ADDorSUB * PAD * (RADIO_ID % PAD_MOD);
+  //cycle = WORK_TIME + ADDorSUB * PAD * (RADIO_ID % PAD_MOD);
 
-  broadcast();
-  reduceNeighbourLife();
+  //broadcast();
+  //reduceNeighbourLife();
 
-  while (cycle--) {
+  //while (cycle--) {
     work();
-  }
+  //}
+  return;
   //cycle = SLEEP_TIME + ADDorSUB * PAD * (RADIO_ID % PAD_MOD);
   //while (cycle--) {
   sleep();
