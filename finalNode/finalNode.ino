@@ -30,8 +30,7 @@ Packet rxPacket =  (Packet)rxData;
 Packet txPacket =  (Packet)txData;
 
 
-void mySetup() {
-  setupLED();
+void setup() {
   setupMemory();
 
   txPacket->from = RADIO_ID;
@@ -47,7 +46,7 @@ int cycle;
 
 bool ADDorSUB = false;
 
-void myLoop() {
+void loop() {
   //work();
   //return;
   wake();
@@ -70,7 +69,6 @@ void myLoop() {
 
 void sleep() {
   _radio.powerDown();
-  offRed();
   watchdogSleep1s();
 }
 
@@ -81,18 +79,13 @@ void wake() {
 }
 
 void work() {
-  onRed();
   if (_radio.hasData()) {
-    onGreen();
-
     _radio.readData(&rxData);
 
     if (checkRxHash()) {
       mergeData();
       addNeighbour();
     }
-
-    offGreen();
   }
 }
 

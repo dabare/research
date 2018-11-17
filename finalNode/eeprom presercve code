@@ -1,0 +1,1 @@
+/home/angelo/Desktop/extracts/arduino-1.8.5/hardware/tools/avr/bin/avrdude -C/home/angelo/Desktop/extracts/arduino-1.8.5/hardware/tools/avr/etc/avrdude.conf -v -pattiny85 -cusbasp -Pusb -Uflash:w:/tmp/arduino_build_470530/set_id.ino.hex:i -U lfuse:w:0x62:m -U hfuse:w:0xd7:m -U efuse:w:0xff:m
