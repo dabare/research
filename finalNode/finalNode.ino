@@ -38,7 +38,7 @@ void setup() {
 
   setupRadio(RADIO_ID);
   //setupRadio(INIT_ID);
-  setupSW();
+  setupNeon();
   setupSleep();
 }
 
@@ -79,6 +79,7 @@ void wake() {
 }
 
 void work() {
+  checkNeon();
   if (_radio.hasData()) {
     _radio.readData(&rxData);
 

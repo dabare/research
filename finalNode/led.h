@@ -8,10 +8,3 @@
 
 int idleReset = 0; //use to off the led
 
-void setupLED() {
-#ifdef LED_ON
-  pinMode(GREEN_LED, OUTPUT);
-  pinMode(RED_LED, OUTPUT);
-#endif
-}
-

@@ -17,6 +17,7 @@ void setupMemory() {
 
 void setupRadio(uint8_t id) {
   while (!_radio.initTwoPin(id, PIN_RADIO_MOMI, PIN_RADIO_SCK)) {//radio error
+    reboot();
   }
 }
 

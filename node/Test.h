@@ -48,11 +48,6 @@ int cycle;
 bool ADDorSUB = false;
 
 void myLoop() {
-  if(isFenceOK()){
-    onRed();
-  }
-  offRed();
-  return;
   //work();
   //return;
   wake();

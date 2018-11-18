@@ -30,3 +30,5 @@ uint8_t RADIO_ID = 255;             // Our radio's id.
 uint8_t CURRENT_ID = INIT_ID;
 
 #define ZONE_RADIOUS 2
+
+#define NEON_LIFE 5 //in duty cycles

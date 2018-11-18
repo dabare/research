@@ -31,13 +31,35 @@
   -o-animation:      invalid 500ms infinite; /* Opera 12+ */
   animation:         invalid 500ms infinite; /* IE 10+ */
 }
+html {
+   margin: 0px;
+   height: 100%;
+   width: 100%;
+}
 body {
-    /*background-color: #c2d6d6;*/
+   background: linear-gradient(to top right, #434343 0%, #000000 100%);
+   margin: 0px;
+   min-height: 100%;
+   width: 100%;
+}
+.rcorners1 {
+    border-radius: 25px;
+    border: 2px solid gray;
+    padding: 4px;    
+}
+.rcorners {
+    border-radius: 25px;
+    border: 2px solid gray;
+    padding: 10px;    
+}
+label {
+    color: white;
 }
   </style>
 </head>
 <body>
-
+<br>
+	<div class="container rcorners1" >
 	  <label>Number of nodes</label>
 	  <input type="Number"  id="nodes" value="7" min="1">
 
@@ -47,20 +69,20 @@ body {
 	  <label>Input</label>
 	  <input type="text"  id="input" value="">
 
-	  
-
-<div class="container">	
-  <table class="table table-dark table-striped" >
+	</div>  
+<br>
+<div class="container rcorners" >	
+  <table class="table table-dark table-striped" id="nodeTable">
     <thead>
       <tr>
         <th width="15%">Node ID</th>
         <th>Time Out</th>
+        <th style="display:none;">Value</th>
       </tr>
     </thead>
     <tbody id="list">
     </tbody>
   </table>
-  
 </div>
 
 </body>
@@ -71,7 +93,7 @@ $(document).ready(function(){
     	$("#list").empty();
     	var nodes = $("#nodes").val();
     	for(count = 0; count < nodes; count++){
-    		$("#list").append('<tr id="row'+(count+1)+'" ><td>Node '+(count + 1)+'</td><td><div class="progress" style="height:20px"><div id="node'+(count+1)+'" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:100%">'+ $("#timeout").val() +'</div></div></td></tr>');
+    		$("#list").append('<tr id="row'+(count+1)+'" ><td>Node '+(count + 1)+'</td><td><div class="progress" style="height:20px"><div id="node'+(count+1)+'" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:100%">'+ $("#timeout").val() +'</div></div></td><td id="value'+(count+1)+'" style="display:none;">'+ $("#timeout").val() +'</td></tr>');
 
     		$("#node"+(count + 1)).attr("remian",$("#timeout").val());
             }
@@ -85,7 +107,42 @@ $(document).ready(function(){
         setupNodeList();
     });
 
-   setInterval(function() {
+    function sortTable() {
+	  var table, rows, switching, i, x, y, shouldSwitch;
+	  table = document.getElementById("nodeTable");
+	  switching = true;
+	  /*Make a loop that will continue until
+	  no switching has been done:*/
+	  while (switching) {
+	    //start by saying: no switching is done:
+	    switching = false;
+	    rows = table.rows;
+	    /*Loop through all table rows (except the
+	    first, which contains table headers):*/
+	    for (i = 1; i < (rows.length - 1); i++) {
+	      //start by saying there should be no switching:
+	      shouldSwitch = false;
+	      /*Get the two elements you want to compare,
+	      one from current row and one from the next:*/
+	      x = rows[i].getElementsByTagName("TD")[2];
+	      y = rows[i + 1].getElementsByTagName("TD")[2];
+	      //check if the two rows should switch place:
+	      if (Number(x.innerHTML) > Number(y.innerHTML)) {
+	        //if so, mark as a switch and break the loop:
+	        shouldSwitch = true;
+	        break;
+	      }
+	    }
+	    if (shouldSwitch) {
+	      /*If a switch has been marked, make the switch
+	      and mark that a switch has been done:*/
+	      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+	      switching = true;
+	    }
+	  }
+	}
+
+   	setInterval(function() {
     	var nodes = $("#nodes").val();
     	for(count = 1; count < (nodes + 1); count++){
 	    	var c = $("#node"+count).attr("remian");
@@ -93,6 +150,7 @@ $(document).ready(function(){
 	    		c = c - 1;
 	    		$("#node"+count).attr("remian",c);
 	    		$( "#node"+count ).html( c );
+	    		$( "#value"+count ).html( c );
 	    		var p = (c * 100)/$("#timeout").val()
 	    		document.getElementById("node"+count).style.width = p+"%";
 	    		if(p<50){
@@ -107,6 +165,7 @@ $(document).ready(function(){
 	    		$( "#row"+count ).addClass( "invalid" );
 	    	}
         }
+        sortTable();
 	}, 1000); 
 
 
@@ -135,6 +194,7 @@ $(document).ready(function(){
 	    	if(vals[count]=="1"){
 	    		$("#node"+count).attr("remian",$("#timeout").val());
 	    		$( "#node"+count ).html( $("#timeout").val() );
+	    		$( "#value"+count ).html( $("#timeout").val() );
 	    		document.getElementById("node"+count).style.width = "100%";
 	    		$( "#node"+count ).removeClass( "bg-danger" ).addClass( "bg-success" );
 	    	}

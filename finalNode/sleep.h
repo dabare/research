@@ -1,5 +1,6 @@
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 void setup_watchdog(int timerPrescaler);
 
 
@@ -49,3 +50,11 @@ void setup_watchdog(int timerPrescaler) {
   WDTCR = bb; //Set new watchdog timeout value
   WDTCR |= _BV(WDIE); //Set the interrupt enable, this will keep unit from resetting after each int
 }
+void reboot() {
+cli();
+WDTCR = 0xD8 | WDTO_1S;
+sei();
+
+wdt_reset();
+while (true) {}
+} //reboot
