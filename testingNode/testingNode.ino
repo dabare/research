@@ -23,7 +23,7 @@ void setup() {
 
   Serial.begin(115200);
   //while (!Serial);
-  Serial.println("Serial Ready");
+  Serial.println("Serial  Ready");
   while (!_radio.initTwoPin(255, PIN_RADIO_MOMI, PIN_RADIO_SCK)) {
     Serial.print(".");
   }
@@ -40,7 +40,7 @@ void setup() {
   }
   Serial.println();
   Keyboard.begin();
-  //delay(1000);
+  delay(1000);
   //Keyboard.println("Ready");
 }
 
@@ -54,7 +54,7 @@ bool checkRxHash() {
 
 unsigned long count = 0;
 void loop() {
-
+  countPackets();
   if (_radio.hasData()) {
     _radio.readData(&data); // Note how '&' must be placed in front of the variable name.
     if (!checkRxHash()) {
@@ -65,10 +65,10 @@ void loop() {
       //Keyboard.print("Droped message from:");
       //Keyboard.print(rxPacket->from);
       //Keyboard.println(" due to invalied hash");
-         return;
+      return;
     }
     Serial.print(rxPacket->from);
-    if(rxPacket->from == LISTEN){
+    if (rxPacket->from == LISTEN) {
       Keyboard.print(rxPacket->from);
       Keyboard.print(" : ");
     }
@@ -76,7 +76,7 @@ void loop() {
     for (byte k = 0; k < 8; k++) {
       Serial.print(rxPacket->data[0] >> k & 1 );
       Serial.print(",");
-      if(rxPacket->from == LISTEN){
+      if (rxPacket->from == LISTEN) {
         Keyboard.print(rxPacket->data[0] >> k & 1 );
         Keyboard.print(",");
       }
@@ -84,7 +84,7 @@ void loop() {
     //for (byte i = 0; i < 32; i++) {
     //  Serial.print(data[i]); Serial.print(",");
     //}
-    if(rxPacket->from == LISTEN){
+    if (rxPacket->from == LISTEN) {
       Keyboard.println();
     }
     Serial.print("  hash: ");
@@ -93,3 +93,29 @@ void loop() {
   }
   return;
 }
+int countt = 0;
+
+
+void countPackets() {
+  while (!_radio.hasData());
+  _radio.readData(&data);
+  Keyboard.println(countt);
+  while (countt < 100) {
+    if (_radio.hasData()) {
+      _radio.readData(&data);
+      countt++;
+    }
+  }
+  Keyboard.println(countt);
+  countt = 0;
+  Keyboard.println(countt);
+  while (countt < 10000) {
+    if (_radio.hasData()) {
+      _radio.readData(&data);
+      countt++;
+    }
+  }
+  Keyboard.println(countt);
+  while(1);
+}
+

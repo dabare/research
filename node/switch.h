@@ -9,6 +9,7 @@ void setupSW() {
 }
 
 bool isFenceOK() {
+  return true;
   if(!(digitalRead(SW) ^ FENCE_OK)){
     neonLife = NEON_LIFE;
     neonStat = true;

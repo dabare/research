@@ -44,12 +44,12 @@ body {
 }
 .rcorners1 {
     border-radius: 25px;
-    border: 2px solid gray;
+    border: 4px solid gray;
     padding: 4px;    
 }
 .rcorners {
     border-radius: 25px;
-    border: 2px solid gray;
+    border: 4px solid gray;
     padding: 10px;    
 }
 label {
@@ -76,7 +76,8 @@ label {
     <thead>
       <tr>
         <th width="15%">Node ID</th>
-        <th>Time Out</th>
+        <th width="55%">Countdown</th>
+        <th width="30%">Last Signal</th>
         <th style="display:none;">Value</th>
       </tr>
     </thead>
@@ -92,8 +93,16 @@ $(document).ready(function(){
 	function setupNodeList() {
     	$("#list").empty();
     	var nodes = $("#nodes").val();
+    	var currentdate = new Date(); // for now
+    	var datetime = currentdate.getDate() + "/"
+                + (currentdate.getMonth()+1)  + "/" 
+                + currentdate.getFullYear() + " @ "  
+                + currentdate.getHours() + ":"  
+                + currentdate.getMinutes() + ":" 
+                + currentdate.getSeconds();
+
     	for(count = 0; count < nodes; count++){
-    		$("#list").append('<tr id="row'+(count+1)+'" ><td>Node '+(count + 1)+'</td><td><div class="progress" style="height:20px"><div id="node'+(count+1)+'" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:100%">'+ $("#timeout").val() +'</div></div></td><td id="value'+(count+1)+'" style="display:none;">'+ $("#timeout").val() +'</td></tr>');
+    		$("#list").append('<tr id="row'+(count+1)+'" ><td>Node '+(count + 1)+'</td><td><div class="progress" style="height:20px"><div id="node'+(count+1)+'" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:100%">'+ $("#timeout").val() +'</div></div></td><td id="time'+(count+1)+'">'+ datetime +'</td><td id="value'+(count+1)+'" style="display:none;">'+ currentdate.getTime() +'</td></tr>');
 
     		$("#node"+(count + 1)).attr("remian",$("#timeout").val());
             }
@@ -107,9 +116,44 @@ $(document).ready(function(){
         setupNodeList();
     });
 
-    function sortTable() {
+    function sortTableString(table,index) {
 	  var table, rows, switching, i, x, y, shouldSwitch;
-	  table = document.getElementById("nodeTable");
+	  table = document.getElementById(table);
+	  switching = true;
+	  /* Make a loop that will continue until
+	  no switching has been done: */
+	  while (switching) {
+	    // Start by saying: no switching is done:
+	    switching = false;
+	    rows = table.rows;
+	    /* Loop through all table rows (except the
+	    first, which contains table headers): */
+	    for (i = 1; i < (rows.length - 1); i++) {
+	      // Start by saying there should be no switching:
+	      shouldSwitch = false;
+	      /* Get the two elements you want to compare,
+	      one from current row and one from the next: */
+	      x = rows[i].getElementsByTagName("TD")[index];
+	      y = rows[i + 1].getElementsByTagName("TD")[index];
+	      // Check if the two rows should switch place:
+	      if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+	        // If so, mark as a switch and break the loop:
+	        shouldSwitch = true;
+	        break;
+	      }
+	    }
+	    if (shouldSwitch) {
+	      /* If a switch has been marked, make the switch
+	      and mark that a switch has been done: */
+	      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+	      switching = true;
+	    }
+	  }
+	}	
+
+    function sortTableNumber(table,index) {
+	  var table, rows, switching, i, x, y, shouldSwitch;
+	  table = document.getElementById(table);
 	  switching = true;
 	  /*Make a loop that will continue until
 	  no switching has been done:*/
@@ -124,8 +168,8 @@ $(document).ready(function(){
 	      shouldSwitch = false;
 	      /*Get the two elements you want to compare,
 	      one from current row and one from the next:*/
-	      x = rows[i].getElementsByTagName("TD")[2];
-	      y = rows[i + 1].getElementsByTagName("TD")[2];
+	      x = rows[i].getElementsByTagName("TD")[index];
+	      y = rows[i + 1].getElementsByTagName("TD")[index];
 	      //check if the two rows should switch place:
 	      if (Number(x.innerHTML) > Number(y.innerHTML)) {
 	        //if so, mark as a switch and break the loop:
@@ -150,7 +194,6 @@ $(document).ready(function(){
 	    		c = c - 1;
 	    		$("#node"+count).attr("remian",c);
 	    		$( "#node"+count ).html( c );
-	    		$( "#value"+count ).html( c );
 	    		var p = (c * 100)/$("#timeout").val()
 	    		document.getElementById("node"+count).style.width = p+"%";
 	    		if(p<50){
@@ -165,10 +208,13 @@ $(document).ready(function(){
 	    		$( "#row"+count ).addClass( "invalid" );
 	    	}
         }
-        sortTable();
+        sortTableNumber("nodeTable",3);
 	}, 1000); 
 
-
+   	//setInterval(function() {
+     //   sortTableString("nodeTable",0);
+    //    sortTableNumber("nodeTable",2);
+	//}, 3000); 
 
 	$.fn.enterKey = function (fnc) {
 	    return this.each(function () {
@@ -181,25 +227,31 @@ $(document).ready(function(){
 	    })
 	}//6 : 0,1,0,0,0,0,0,0,
 
-
 	$("#input").enterKey(function () {
     	var inp = $("#input").val();
     	$("#input").val("");
     	var res = inp.split(":");
     	var vals = res[1].trim().split(",")
     	var nodes = $("#nodes").val();
-
+    	var currentdate = new Date(); // for now
+    	var datetime = currentdate.getDate() + "/"
+                + (currentdate.getMonth()+1)  + "/" 
+                + currentdate.getFullYear() + " @ "  
+                + currentdate.getHours() + ":"  
+                + currentdate.getMinutes() + ":" 
+                + currentdate.getSeconds();
     	
     	for(count = 1; count < (nodes + 1); count++){
 	    	if(vals[count]=="1"){
 	    		$("#node"+count).attr("remian",$("#timeout").val());
 	    		$( "#node"+count ).html( $("#timeout").val() );
-	    		$( "#value"+count ).html( $("#timeout").val() );
+	    		$( "#value"+count ).html( currentdate.getTime() );
+	    		$( "#time"+count ).html( datetime );
 	    		document.getElementById("node"+count).style.width = "100%";
 	    		$( "#node"+count ).removeClass( "bg-danger" ).addClass( "bg-success" );
 	    	}
         }
-	})
+	});
 
 	setupNodeList();
 });

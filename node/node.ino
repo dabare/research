@@ -10,7 +10,8 @@ void setup() {
 }
 
 void loop() {
-  myLoop();
+  _radio.send(INIT_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);
+  //myLoop();
 }
 
 //unsuccessfull broadcast 3mA
