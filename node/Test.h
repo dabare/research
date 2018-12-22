@@ -48,8 +48,14 @@ int cycle;
 bool ADDorSUB = false;
 
 void myLoop() {
+  if (_radio.hasData()) {
+    onGreen();
+    _radio.readData(&rxData);
+    delay(100);
+    offGreen();
+  }
   //work();
-  //return;
+  return;
   wake();
 
   //cycle = WORK_TIME;

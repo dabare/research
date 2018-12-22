@@ -55,6 +55,38 @@ body {
 label {
     color: white;
 }
+
+
+.con {
+  display: flex;
+  justify-content: space-between;
+  border-top: 2px solid white;
+  padding-top: 15px;
+  margin-top: 15px;
+
+}
+
+.con div {
+  color: white;
+  background-color: green;
+  font-weight: bold;
+  border: 2px solid white;
+  margin-top: -40px;
+  width: 45px;
+  height: 45px;
+  line-height: 45px;
+  text-align: center;
+  border-radius: 50%;
+}
+
+.scrollable {
+  height: 100px;
+  overflow-x: scroll;
+}
+::-webkit-scrollbar {
+    width: 0px;
+    background: transparent; /* make scrollbar transparent */
+}
   </style>
 </head>
 <body>
@@ -70,6 +102,11 @@ label {
 	  <input type="text"  id="input" value="">
 
 	</div>  
+<br>
+<div class="container rcorners" style="background-color: #434343;">
+	<div class="con" id="nodeList">
+	</div>
+</div>
 <br>
 <div class="container rcorners" >	
   <table class="table table-dark table-striped" id="nodeTable">
@@ -92,6 +129,7 @@ label {
 $(document).ready(function(){
 	function setupNodeList() {
     	$("#list").empty();
+    	$("#nodeList").empty();
     	var nodes = $("#nodes").val();
     	var currentdate = new Date(); // for now
     	var datetime = currentdate.getDate() + "/"
@@ -101,8 +139,12 @@ $(document).ready(function(){
                 + currentdate.getMinutes() + ":" 
                 + currentdate.getSeconds();
 
+         datetime = '-- @ --';
+
     	for(count = 0; count < nodes; count++){
     		$("#list").append('<tr id="row'+(count+1)+'" ><td>Node '+(count + 1)+'</td><td><div class="progress" style="height:20px"><div id="node'+(count+1)+'" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width:100%">'+ $("#timeout").val() +'</div></div></td><td id="time'+(count+1)+'">'+ datetime +'</td><td id="value'+(count+1)+'" style="display:none;">'+ currentdate.getTime() +'</td></tr>');
+
+    		$("#nodeList").append('<div id="item'+(count+1)+'">'+(count + 1)+'</div>');
 
     		$("#node"+(count + 1)).attr("remian",$("#timeout").val());
             }
@@ -202,10 +244,11 @@ $(document).ready(function(){
 	    			$( "#node"+count ).removeClass( "bg-danger" ).addClass( "bg-success" );
 	    		}
 	    		$( "#row"+count ).removeClass( "invalid" );
-
+	    		$( "#item"+count ).removeClass( "invalid" );
 
 	    	}else{
 	    		$( "#row"+count ).addClass( "invalid" );
+	    		$( "#item"+count ).addClass( "invalid" );
 	    	}
         }
         sortTableNumber("nodeTable",3);

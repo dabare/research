@@ -54,7 +54,7 @@ bool checkRxHash() {
 
 unsigned long count = 0;
 void loop() {
-  countPackets();
+  //countPackets();
   if (_radio.hasData()) {
     _radio.readData(&data); // Note how '&' must be placed in front of the variable name.
     if (!checkRxHash()) {
@@ -106,7 +106,8 @@ void countPackets() {
       countt++;
     }
   }
-  Keyboard.println(countt);
+  Keyboard.println(0
+  );
   countt = 0;
   Keyboard.println(countt);
   while (countt < 10000) {
