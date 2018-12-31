@@ -11,12 +11,6 @@ void setupSleep() {
   ADCSRA &= ~(1 << ADEN); //Disable ADC, saves ~230uA
 }
 
-//void loop() {
-// watchdogSleep1s();
-
-// do stuff with sleepTime
-//}
-
 void watchdogSleep1s() {
   ADCSRA &= ~(1 << ADEN); //Disable ADC, saves ~230uA
   setup_watchdog(6u); //Setup watchdog to go off after 1sec

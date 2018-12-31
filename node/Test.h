@@ -48,17 +48,6 @@ int cycle;
 bool ADDorSUB = false;
 
 void myLoop() {
-  if (_radio.hasData()) {
-    onGreen();
-    _radio.readData(&rxData);
-    delay(100);
-    offGreen();
-  }
-  //work();
-  return;
-  wake();
-
-  //cycle = WORK_TIME;
   cycle = WORK_TIME + ADDorSUB * PAD * (RADIO_ID % PAD_MOD);
 
   broadcast();
@@ -96,6 +85,8 @@ void work() {
     if (checkRxHash()) {
       mergeData();
       addNeighbour();
+     // txPacket->data[0] = rxPacket->from;//shoud be romoved
+     // _radio.send(200, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);//shoud be romoved
     }
 
     offGreen();
