@@ -37,22 +37,19 @@ void setup() {
   eraseData();
 
   setupRadio(RADIO_ID);
-  //setupRadio(INIT_ID);
+
   setupNeon();
   setupSleep();
 }
 
 int cycle;
 
-bool ADDorSUB = false;
+bool LONG_DS = false;//long dutycycle
 
 void loop() {
-  //work();
-  //return;
   wake();
 
-  //cycle = WORK_TIME;
-  cycle = WORK_TIME + ADDorSUB * PAD * (RADIO_ID % PAD_MOD);
+  cycle = WORK_TIME + LONG_DS * PAD * (RADIO_ID % (ZONE_RADIUS + 1));
 
   broadcast();
   reduceNeighbourLife();
@@ -60,11 +57,10 @@ void loop() {
   while (cycle--) {
     work();
   }
-  //cycle = SLEEP_TIME + ADDorSUB * PAD * (RADIO_ID % PAD_MOD);
-  //while (cycle--) {
-  sleep();
-  //}
-  ADDorSUB = !ADDorSUB;
+
+  sleep();//sleeps for one second
+
+  LONG_DS = !LONG_DS;
 }
 
 void sleep() {
@@ -74,7 +70,6 @@ void sleep() {
 
 void wake() {
   setupRadio(RADIO_ID);
-  //setupRadio(INIT_ID);
   _radio.hasData();
 }
 
@@ -96,7 +91,7 @@ void broadcast() {
   addMyData();
   calculateTxHash();
 
-  _radio.send(INIT_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);
+  _radio.send(BCAST_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);
   while (tmpBroadcast) {
     _radio.send(RADIO_ID - tmpBroadcast, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);
     _radio.send(RADIO_ID + tmpBroadcast, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);

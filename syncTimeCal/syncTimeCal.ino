@@ -24,12 +24,12 @@ void setup() {
   Serial.begin(115200);
   //while (!Serial);
   Serial.println("Serial  Ready");
-  while (!_radio.initTwoPin(200, PIN_RADIO_MOMI, PIN_RADIO_SCK)) {
+  while (!_radio.initTwoPin(255, PIN_RADIO_MOMI, PIN_RADIO_SCK)) {
     Serial.print(".");
   }
 
   _radio.printDetails();
-  
+
   Serial.println();
   Keyboard.begin();
   delay(1000);
@@ -42,25 +42,47 @@ void loop() {
   if (_radio.hasData()) {
     _radio.readData(&data); // Note how '&' must be placed in front of the variable name.
 
-    Keyboard.print(rxPacket->data[0]);
-    
-    Keyboard.press(KEY_RIGHT_ARROW);
-    Keyboard.release(KEY_RIGHT_ARROW);
-    
-    Keyboard.print(rxPacket->from);  
-    
-    Keyboard.press(KEY_RIGHT_ARROW);
-    Keyboard.release(KEY_RIGHT_ARROW);
+    if (rxPacket->data[1] == 's') {
+      Keyboard.print(rxPacket->data[0]);
+
+      Keyboard.press(KEY_RIGHT_ARROW);
+      Keyboard.release(KEY_RIGHT_ARROW);
+
+      Keyboard.print(rxPacket->from);
+
+      Keyboard.press(KEY_RIGHT_ARROW);
+      Keyboard.release(KEY_RIGHT_ARROW);
 
 
-    Keyboard.press(KEY_LEFT_CTRL);
-    Keyboard.press(KEY_LEFT_SHIFT);
-    Keyboard.press(';');
-    Keyboard.releaseAll();  
-    Keyboard.press(KEY_DOWN_ARROW);
-    Keyboard.release(KEY_DOWN_ARROW);
-    Keyboard.press(KEY_HOME);
-    Keyboard.release(KEY_HOME);
+      Keyboard.press(KEY_LEFT_CTRL);
+      Keyboard.press(KEY_LEFT_SHIFT);
+      Keyboard.press(';');
+      Keyboard.releaseAll();
+      Keyboard.press(KEY_DOWN_ARROW);
+      Keyboard.release(KEY_DOWN_ARROW);
+      Keyboard.press(KEY_HOME);
+      Keyboard.release(KEY_HOME);
+    }else{
+      Keyboard.print(rxPacket->from);
+
+      Keyboard.press(KEY_RIGHT_ARROW);
+      Keyboard.release(KEY_RIGHT_ARROW);
+
+      Keyboard.print("B");
+
+      Keyboard.press(KEY_RIGHT_ARROW);
+      Keyboard.release(KEY_RIGHT_ARROW);
+
+
+      Keyboard.press(KEY_LEFT_CTRL);
+      Keyboard.press(KEY_LEFT_SHIFT);
+      Keyboard.press(';');
+      Keyboard.releaseAll();
+      Keyboard.press(KEY_DOWN_ARROW);
+      Keyboard.release(KEY_DOWN_ARROW);
+      Keyboard.press(KEY_HOME);
+      Keyboard.release(KEY_HOME);
+    }
   }
 }
 
