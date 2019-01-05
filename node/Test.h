@@ -85,10 +85,10 @@ void work() {
     if (checkRxHash()) {
       mergeData();
       addNeighbour();
-      txPacket->data[1] = 's';
-      txPacket->data[0] = rxPacket->from;//shoud be romoved
-      _radio.send(INIT_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);//shoud be romoved
-      txPacket->data[1] = 0;
+      //txPacket->data[1] = 's';
+      //txPacket->data[0] = rxPacket->from;//shoud be romoved
+      //_radio.send(INIT_ID, &txData, sizeof(txData), NRFLite::REQUIRE_ACK);//shoud be romoved
+      //txPacket->data[1] = 0;
     }
 
     offGreen();

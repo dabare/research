@@ -57,7 +57,7 @@ void loop() {
   //countPackets();
   if (_radio.hasData()) {
     _radio.readData(&data); // Note how '&' must be placed in front of the variable name.
-    if(rxPacket->from != 4) return;
+
     if (!checkRxHash()) {
       Serial.print("Droped message from:");
       Serial.print(rxPacket->from);

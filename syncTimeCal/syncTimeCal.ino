@@ -24,7 +24,7 @@ void setup() {
   Serial.begin(115200);
   //while (!Serial);
   Serial.println("Serial  Ready");
-  while (!_radio.initTwoPin(255, PIN_RADIO_MOMI, PIN_RADIO_SCK)) {
+  while (!_radio.initTwoPin(254, PIN_RADIO_MOMI, PIN_RADIO_SCK)) {
     Serial.print(".");
   }
 
